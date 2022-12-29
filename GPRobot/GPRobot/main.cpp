@@ -1,7 +1,7 @@
 #include <Windows.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
-#include <math.h>
+#include <cmath>
 
 #pragma comment (lib, "OpenGL32.lib")
 #pragma comment (lib, "GLU32.lib")
@@ -155,12 +155,101 @@ void projection()
 
 /*
  * --------------------------------------------------------------------
- *	Objects Drawing Group : TBA (Should make this another class ah XD)
+ *						Objects Drawing Group
  * --------------------------------------------------------------------
 */
 
 /************************** DRAW 2D OBJECTS **************************/
-// Draw Circle
+// Draw Circle - TD: Add Texture Coords
+void DrawLineCircle(float xOrigin, float yOrigin, float radius)
+{
+	glBegin(GL_LINE_LOOP);
+	for (float angle = 0; angle <= 2 * PI; angle += (2 * PI) / 30)
+	{
+		float xPos = xOrigin + radius * cos(angle);
+		float yPos = yOrigin + radius * sin(angle);
+		glVertex2f(xPos, yPos);
+	}
+	glEnd();
+}
+void DrawFullCircle(float xOrigin, float yOrigin, float radius)
+{
+	glBegin(GL_TRIANGLE_FAN);
+	for (float angle = 0; angle <= 2 * PI; angle += (2 * PI) / 30)
+	{
+		float xPos = xOrigin + radius * cos(angle);
+		float yPos = yOrigin + radius * sin(angle);
+		glVertex2f(xPos, yPos);
+	}
+	glEnd();
+}
+
+// Draw Square
+void DrawLineSquare(float leftXAxis, float topYAxis, float rightXAxis, float botYAxis)
+{
+	glBegin(GL_LINE_LOOP);
+	glTexCoord2f(0.0, 0.0);
+	glVertex2f(leftXAxis, botYAxis);
+	glTexCoord2f(0.0, 1.0);
+	glVertex2f(leftXAxis, topYAxis);
+	glTexCoord2f(1.0, 1.0);
+	glVertex2f(rightXAxis, topYAxis);
+	glTexCoord2f(1.0, 0.0);
+	glVertex2f(rightXAxis, botYAxis);
+	glEnd();
+}
+void DrawFullSquare(float leftXAxis, float topYAxis, float rightXAxis, float botYAxis)
+{
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 0.0);
+	glVertex2f(leftXAxis, botYAxis);
+	glTexCoord2f(0.0, 1.0);
+	glVertex2f(leftXAxis, topYAxis);
+	glTexCoord2f(1.0, 1.0);
+	glVertex2f(rightXAxis, topYAxis);
+	glTexCoord2f(1.0, 0.0);
+	glVertex2f(rightXAxis, botYAxis);
+	glEnd();
+}
+
+// Draw Triangle
+/*
+ * !! IMPORTANT !!
+ * The texture coordinate is set up so that the coord will map it like this
+ * 
+ *            (x2, y2)
+ *              ^
+ *            /  \
+ *          /     \
+ *        /________\
+ * (x1, y1)       (x3, x3)
+ * 
+ * Write your coordinates with something like this shape in mind
+ */
+void DrawLineTriangle(float x1, float y1, float x2, float y2, float x3, float y3)
+{
+	glBegin(GL_LINE_LOOP);
+		glTexCoord2f(0.0, 0.0);
+		glVertex2f(x1, y1);
+		glTexCoord2f(0.5, 1.0);
+		glVertex2f(x2, y2);
+		glTexCoord2f(1.0,0.0);
+		glVertex2f(x3, y3);
+	glEnd();
+}
+void DrawFullTriangle(float x1, float y1, float x2, float y2, float x3, float y3)
+{
+	glBegin(GL_TRIANGLES);
+	glTexCoord2f(0.0, 0.0);
+	glVertex2f(x1, y1);
+	glTexCoord2f(0.5, 1.0);
+	glVertex2f(x2, y2);
+	glTexCoord2f(1.0,0.0);
+	glVertex2f(x3, y3);
+	glEnd();
+}
+
+// Draw Polygon? - I technically have until decagon lol but I don't want to think it's texture coordinate QAQ
 
 /************************** DRAW 3D OBJECTS **************************/
 
@@ -171,6 +260,7 @@ void DrawLineSphere(GLdouble radius)
 	sphere = gluNewQuadric();
 
 	gluQuadricDrawStyle(sphere, GLU_LINE);
+	gluQuadricTexture(sphere, TRUE);
 	gluSphere(sphere, radius, 30, 30);
 	gluDeleteQuadric(sphere);
 }
@@ -180,11 +270,76 @@ void DrawFillSphere(GLdouble radius)
 	sphere = gluNewQuadric();
 
 	gluQuadricDrawStyle(sphere, GLU_FILL);
+	gluQuadricTexture(sphere, TRUE);
 	gluSphere(sphere, radius, 30, 30);
 	gluDeleteQuadric(sphere);
 }
 
-// Draw Cube - TD : Adjust the texture coordinates
+// Draw Cube
+void DrawFullCube(float size)
+{
+	glBegin(GL_LINE_LOOP);
+	// Face 1 : Bottom face
+	glTexCoord2f(0, 1);
+	glVertex3f(0.0f, 0.0f, size);
+	glTexCoord2f(1, 1);
+	glVertex3f(size, 0.0f, size);
+	glTexCoord2f(1, 0);
+	glVertex3f(size, 0.0f, 0.0f);
+	glTexCoord2f(0, 0);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+
+	// Face 2 : Left Face
+	glTexCoord2f(0, 1);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glTexCoord2f(1, 1);
+	glVertex3f(0.0f, size, 0.0f);
+	glTexCoord2f(1, 0);
+	glVertex3f(0.0f, size, size);
+	glTexCoord2f(0, 0);
+	glVertex3f(0.0f, 0.0f, size);
+
+	// Face 3 : Front Face
+	glTexCoord2f(0, 1);
+	glVertex3f(0.0f, 0.0f, size);
+	glTexCoord2f(1, 1);
+	glVertex3f(0.0f, size, size);
+	glTexCoord2f(1, 0);
+	glVertex3f(size, size, size);
+	glTexCoord2f(0, 0);
+	glVertex3f(size, 0.0f, size);
+
+	// Face 4 : Right Face
+	glTexCoord2f(0, 1);
+	glVertex3f(size, 0.0f, size);
+	glTexCoord2f(1, 1);
+	glVertex3f(size, 0.0f, 0.0f);
+	glTexCoord2f(1, 0);
+	glVertex3f(size, size, 0.0f);
+	glTexCoord2f(0, 0);
+	glVertex3f(size, size, size);
+
+	// Face 5 : Top Face
+	glTexCoord2f(0, 1);
+	glVertex3f(size, size, size);
+	glTexCoord2f(1, 1);
+	glVertex3f(0.0f, size, size);
+	glTexCoord2f(1, 0);
+	glVertex3f(0.0f, size, 0.0f);
+	glTexCoord2f(0, 0);
+	glVertex3f(size, size, 0.0f);
+
+	// Face 6 : Back Face
+	glTexCoord2f(0, 1);
+	glVertex3f(size, size, 0.0f);
+	glTexCoord2f(1, 1);
+	glVertex3f(size, 0.0f, 0.0f);
+	glTexCoord2f(1, 0);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glTexCoord2f(0, 0);
+	glVertex3f(0.0f, size, 0.0f);
+	glEnd();
+}
 void DrawFillCube(float size)
 {
 	glBegin(GL_QUADS);
@@ -251,28 +406,50 @@ void DrawFillCube(float size)
 }
 
 // Draw Cone
-void DrawFillCone( double radius, double height)
+void DrawLineCone(double radius, double height)
+{
+	GLUquadricObj* cone = NULL;
+	cone = gluNewQuadric();
+
+	gluQuadricDrawStyle(cone, GLU_LINE);
+	gluQuadricTexture(cone, TRUE);
+	gluCylinder(cone, radius, 0, height, 30, 30);
+	gluDeleteQuadric(cone);
+}
+void DrawFillCone(double radius, double height)
 {
 	GLUquadricObj* cone = NULL;
 	cone = gluNewQuadric();
 
 	gluQuadricDrawStyle(cone, GLU_FILL);
+	gluQuadricTexture(cone, TRUE);
 	gluCylinder(cone, radius, 0, height, 30, 30);
 	gluDeleteQuadric(cone);
 }
 
 // Draw Cylinder
+void DrawLineCylinder(double baseRadius, double topRadius, double height)
+{
+	GLUquadricObj* cylinder = NULL;
+	cylinder = gluNewQuadric();
+
+	gluQuadricDrawStyle(cylinder, GLU_LINE);
+	gluQuadricTexture(cylinder, TRUE);
+	gluCylinder(cylinder, baseRadius, topRadius, height, 30, 30);
+	gluDeleteQuadric(cylinder);
+}
 void DrawFillCylinder(double baseRadius, double topRadius, double height)
 {
 	GLUquadricObj* cylinder = NULL;
 	cylinder = gluNewQuadric();
 
 	gluQuadricDrawStyle(cylinder, GLU_FILL);
+	gluQuadricTexture(cylinder, TRUE);
 	gluCylinder(cylinder, baseRadius, topRadius, height, 30, 30);
 	gluDeleteQuadric(cylinder);
 }
 
-// Draw Pyramid
+// Draw Pyramid - Consolidate the texCoord again?
 void DrawLinePyramid(float size)
 {
 	glLineWidth(5.0);
@@ -299,31 +476,43 @@ void DrawLinePyramid(float size)
 void DrawFillPyramid(float size)
 {
 	glBegin(GL_QUADS);
-	glTexCoord3f(0, 0, 1);
+	glTexCoord2f(0, 1);
 	glVertex3f(0.0f, 0.0f, size);
-	glTexCoord3f(1, 0, 1);
+	glTexCoord2f(1, 1);
 	glVertex3f(size, 0.0f, size);
-	glTexCoord3f(1, 0, 0);
+	glTexCoord2f(1, 0);
 	glVertex3f(size, 0.0f, 0.0f);
-	glTexCoord3f(0, 0, 0);
+	glTexCoord2f(0, 0);
 	glVertex3f(0.0f, 0.0f, 0.0f);
 	glEnd();
-
+	
 	glBegin(GL_TRIANGLES);
+	glTexCoord2f(0.5, 0.5);
 	glVertex3f(size / 2, size, size / 2);
+	glTexCoord2f(0, 1);
 	glVertex3f(0.0f, 0.0f, size);
+	glTexCoord2f(0, 0);
 	glVertex3f(0.0f, 0.0f, 0.0f);
-
+	
+	glTexCoord2f(0.5, 0.5);
 	glVertex3f(size / 2, size, size / 2);
+	glTexCoord2f(1, 1);
 	glVertex3f(size, 0.0f, size);
+	glTexCoord2f(1, 0);
 	glVertex3f(size, 0.0f, 0.0f);
-
+	
+	glTexCoord2f(0.5, 0.5);
 	glVertex3f(size / 2, size, size / 2);
+	glTexCoord2f(1, 0);
 	glVertex3f(size, 0.0f, 0.0f);
+	glTexCoord2f(0, 0);
 	glVertex3f(0.0f, 0.0f, 0.0f);
 
+	glTexCoord2f(0.5, 0.5);
 	glVertex3f(size / 2, size, size / 2);
+	glTexCoord2f(0, 0);
 	glVertex3f(0.0f, 0.0f, 0.0f);
+	glTexCoord2f(0, 1);
 	glVertex3f(0.0f, 0.0f, size);
 	glEnd();
 }
